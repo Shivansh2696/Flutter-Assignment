@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_assignment/utils.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +13,26 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  Future<void> loginUser() async {
+    const String apiUrl = "https://dummyjson.com/auth/login";
+    final String username = emailController.text;
+    final String password = passwordController.text;
+
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      body: {
+        'username': username,
+        'password': password,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print("Login Successful");
+    } else {
+      print("Login failed");
+    }
+  }
+
   String? emailError;
   String? passwordError;
 
@@ -20,8 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       passwordError = validatePassword(passwordController.text);
 
       if (emailError == null && passwordError == null) {
-        // Perform login logic here
-        print('Login successful');
+          loginUser();
       }
     });
   }
@@ -64,7 +85,6 @@ class _LoginPageState extends State<LoginPage> {
               FractionallySizedBox(
                 widthFactor: 0.9, // Set the width factor to cover half of the width
                 child: ElevatedButton(
-                  onPressed: validateInputs,
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<OutlinedBorder>(
                       RoundedRectangleBorder(
@@ -73,6 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.lightBlue),
                   ),
+                  onPressed: () { validateInputs(); },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Text(
@@ -99,7 +120,6 @@ class _LoginPageState extends State<LoginPage> {
               FractionallySizedBox(
                 widthFactor: 0.9, // Set the width factor to cover half of the width
                 child: ElevatedButton(
-                  onPressed: validateInputs,
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<OutlinedBorder>(
                       RoundedRectangleBorder(
@@ -108,6 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.lightBlue),
                   ),
+                  onPressed: () {},
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Text(
@@ -131,9 +152,10 @@ class _LoginPageState extends State<LoginPage> {
   String? validateEmail(String email) {
     if (email.isEmpty) {
       return 'Email is required';
-    } else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$').hasMatch(email)) {
-      return 'Invalid email format';
     }
+    // else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$').hasMatch(email)) {
+    //   return 'Invalid email format';
+    // }
     return null;
   }
 
