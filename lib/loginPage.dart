@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_assignment/utils.dart';
+import 'package:flutter_assignment/userProvider.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,10 +11,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  TextEditingController emailController = TextEditingController(text: "kminchelle");
+  TextEditingController passwordController = TextEditingController(text: "0lelplR");
 
-  Future<void> loginUser() async {
+  Future<void> loginUser(BuildContext context) async {
     const String apiUrl = "https://dummyjson.com/auth/login";
     final String username = emailController.text;
     final String password = passwordController.text;
@@ -27,22 +28,33 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (response.statusCode == 200) {
-      print("Login Successful");
+      await Provider.of<UserProvider>(context, listen: false).login();
+      Navigator.pushReplacementNamed(context, '/dashboardScreen');
     } else {
-      print("Login failed");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login Failed'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
+  }
+
+  Future<void> logoutUser(BuildContext context) async {
+    await Provider.of<UserProvider>(context, listen: false).logout();
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   String? emailError;
   String? passwordError;
 
-  void validateInputs() {
+  void validateInputs(BuildContext context) {
     setState(() {
       emailError = validateEmail(emailController.text);
       passwordError = validatePassword(passwordController.text);
 
       if (emailError == null && passwordError == null) {
-          loginUser();
+        loginUser(context);
       }
     });
   }
@@ -51,11 +63,10 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         title: const Text(
           'SignIn',
           textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.bold)
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -83,60 +94,60 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
               FractionallySizedBox(
-                widthFactor: 0.9, // Set the width factor to cover half of the width
+                widthFactor: 0.9,
                 child: ElevatedButton(
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<OutlinedBorder>(
                       RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0)
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.lightBlue),
                   ),
-                  onPressed: () { validateInputs(); },
+                  onPressed: () {
+                    validateInputs(context);
+                  },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Text(
                       'Sign In',
                       style: TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
               ),
-
               const SizedBox(height: 10),
-
               const Text(
-                  '------- OR -------',
-                  textAlign: TextAlign.center
+                '------- OR -------',
+                textAlign: TextAlign.center,
               ),
-
               const SizedBox(height: 10),
-
               FractionallySizedBox(
-                widthFactor: 0.9, // Set the width factor to cover half of the width
+                widthFactor: 0.9,
                 child: ElevatedButton(
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<OutlinedBorder>(
                       RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0)
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.lightBlue),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    logoutUser(context);
+                  },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Text(
-                      'Sign Up',
+                      'Logout',
                       style: TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -153,17 +164,12 @@ class _LoginPageState extends State<LoginPage> {
     if (email.isEmpty) {
       return 'Email is required';
     }
-    // else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$').hasMatch(email)) {
-    //   return 'Invalid email format';
-    // }
     return null;
   }
 
   String? validatePassword(String password) {
     if (password.isEmpty) {
       return 'Password is required';
-    } else if (password.length < 6) {
-      return 'Password must be at least 6 characters';
     }
     return null;
   }
